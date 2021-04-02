@@ -2,6 +2,7 @@
 #include "AsyncUDP.h"
 
 struct pack {
+  bool wifi_stat;
   String orario;
   String heading;
   String gspeed;
@@ -24,9 +25,12 @@ void setup()
     WiFi.begin(ssid, password);
     if (WiFi.waitForConnectResult() != WL_CONNECTED) {
         Serial.println("WiFi Failed");
+        attuale.wifi_stat = 0;
         while(1) {
             delay(1000);
         }
+    } else {
+      attuale.wifi_stat = 1;
     }
     if(udp.listen(1234)) {
         Serial.print("UDP Listening on IP: ");
@@ -94,7 +98,17 @@ void rmc(char dati[]){
   }
 
   //passing RMC info to global struct
-  attuale.orario = info[1];
+  timeset(info[1]);
   attuale.gspeed = info[7];
   //Serial.println("Recieved RMC");
+}
+
+void timeset(String str){
+  int h = str.substring(0,2).toInt();
+  int m = str.substring(2,4).toInt();
+  int s = str.substring(4).toInt();
+
+  h += 2;
+  
+  attuale.orario = String(h)+":"+String(m)+":"+String(s);
 }
